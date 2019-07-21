@@ -1,4 +1,4 @@
-const { TOKEN, PREFIX } = require('./config');
+const { DISCORD_TOKEN, PREFIX } = require('./config');
 const fs = require('fs');
 
 //Instances of client and container for command handlers
@@ -43,7 +43,7 @@ client.on('message', message => {
     
 });
 
-client.login(TOKEN)
+client.login(DISCORD_TOKEN)
     .then(() => {
         console.log('Successfully logged in');
     })
