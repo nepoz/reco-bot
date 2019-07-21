@@ -1,6 +1,7 @@
 const { TOKEN, PREFIX } = require('./config');
 const fs = require('fs');
 
+//Instances of client and container for command handlers
 const Discord = require('discord.js');
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
@@ -19,17 +20,19 @@ client.once('ready', () => {
     console.log('We ready!');
 });
 
+//Event listener for messages in channel
 client.on('message', message => {
+    //No need to process message if it doesn't start with the prefix or if the message is sent by a bot
     if (!message.content.startsWith(PREFIX) || message.author.bot) return;
     
     const args = message.content
-        .slice(PREFIX.length)
-        .split(/ +/)
-        .filter(arg => !arg.match(/^$| +/));
-    if (!args.length) return;
+        .slice(PREFIX.length)       //remove prefix from arguments
+        .split(/ +/)                //split across whitespace
+        .filter(arg => !arg.match(/^$| +/));    //Remove all empty characters/spaces
+    if (!args.length) return;          //Currently, if no command, nothing to do
 
-    const commandName = args.shift().toLowerCase();
-    const command = client.commands.get(commandName);
+    const commandName = args.shift().toLowerCase();     //command user wants to execute will be FIRST in argList
+    const command = client.commands.get(commandName);   //Retrieve specific command handler from Collection
     
     try { 
         command.execute(message, args);
