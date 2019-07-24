@@ -41,7 +41,7 @@ client.on('message', message => {
 
 client.login(DISCORD_TOKEN)
     .then(() => {
-        console.log('Successfully logged in');
+        console.log('Successfully logged in to Discord API');
     })
     .catch(err => {
         console.log('An error occured logging in: ', err.message);
