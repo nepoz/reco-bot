@@ -16,10 +16,6 @@ commandFiles.forEach(file => {
     client.commands.set(command.name, command);
 });
 
-client.once('ready', () => {
-    console.log('We ready!');
-});
-
 //Event listener for messages in channel
 client.on('message', message => {
     //No need to process message if it doesn't start with the prefix or if the message is sent by a bot
