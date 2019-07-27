@@ -1,10 +1,11 @@
-require('dotenv').config();
+const { KEY, MONGODB_URI, } = require('../config.js');
 const axios = require('axios');
 const mongoose = require('mongoose');
 const AuthInformation = require('../models/AuthInformation');
 const Cryptr = require('cryptr');
+const currentlyPlaying = require('../utils/endpoints').currentlyPlaying;
 
-const cryptr = new Cryptr(process.env.KEY);
+const cryptr = new Cryptr(KEY);
 
 module.exports = {
     name: 'current',
@@ -17,7 +18,7 @@ module.exports = {
      * @param args: Any further arguments that were passed with the request
      */
     execute: async (message, args) => {
-        await mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true });
+        await mongoose.connect(MONGODB_URI, { useNewUrlParser: true });
 
         // Retrieve user's auth info and decrypt tokens
         const tokens = 
@@ -36,7 +37,7 @@ module.exports = {
         // Retrieve song currently being played from Spotify API
         const current =
             await 
-            axios.get(`${process.env.API_BASE_URL}/me/player`, {
+            axios.get(currentlyPlaying, {
                 headers: { Authorization: `Bearer ${tokens.access_token}` }
             }).then(res => res.data);
             
