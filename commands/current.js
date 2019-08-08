@@ -27,11 +27,12 @@ module.exports = {
                 .then(authInfo => authInfo.map(result => result.toJSON()))
                 .then(authInfo => authInfo.find(entry => entry.id === message.author.id.toString()))
                 .then(encryptedInfo => {
-                    encryptedInfo.auth.access_token = cryptr.decrypt(encryptedInfo.auth.access_token);
-                    encryptedInfo.auth.refresh_token = cryptr.decrypt(encryptedInfo.auth.refresh_token);
+                    const userInfo = new Object();
+                    userInfo.access_token = cryptr.decrypt(encryptedInfo.auth.access_token);
+                    userInfo.refresh_token = cryptr.decrypt(encryptedInfo.auth.refresh_token);
+                    
+                    return userInfo;
                 })
-                .then(userInfo => userInfo.auth);
-        
         mongoose.connection.close();
 
         // Retrieve song currently being played from Spotify API
@@ -42,8 +43,9 @@ module.exports = {
             }).then(res => res.data);
             
         const track = current.item
-        
-       //Send relevant information back to text channel
+       
+        //Send relevant information back to text channel
        message.channel.send(`${message.author.username} recommends ${track.name}!`);
+       message.channel.send(track.external_urls.spotify);
     }
 };
