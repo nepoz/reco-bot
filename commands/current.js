@@ -4,8 +4,7 @@ const Cryptr = require('cryptr');
 const queryString = require('query-string');
 const AuthInformation = require('../models/AuthInformation');
 const { KEY, MONGODB_URI } = require('../config.js');
-const { currentlyPlaying } = require('../utils/endpoints');
-const { refresh } = require('../utils/endpoints');
+const endpoints = require('../utils/endpoints')
 
 const cryptr = new Cryptr(KEY);
 
@@ -28,29 +27,29 @@ module.exports = {
       .then((authInfo) => authInfo.map((result) => result.toJSON()))
       .then((authInfo) => authInfo.find((entry) => entry.id === message.author.id.toString()))
       .then((encryptedInfo) => {
-        const userInfo = new Object();
-        userInfo.access_token = cryptr.decrypt(encryptedInfo.auth.access_token);
-        userInfo.refresh_token = cryptr.decrypt(encryptedInfo.auth.refresh_token);
+        const userInfo = {
+          access_token: cryptr.decrypt(encryptedInfo.auth.access_token),
+          refresh_token: cryptr.decrypt(encryptedInfo.auth.refresh_token),
+          expires_at: encryptedInfo.expires_at,
+        };
 
         return userInfo;
       });
     mongoose.connection.close();
 
     // Retrieve song currently being played from Spotify API
-    const currentlyPlayingPromise = 
-        axios
-        .get(currentlyPlaying, {headers: { Authorization: `Bearer ${tokens.access_token}` }})
-        .then((res) => res.data)
-    
-    const current =
-      await currentlyPlayingPromise
-      .catch(async err => {
-          await axios.get(`${refresh}?${queryString.stringify({ id: message.author.id.toString() })}`);
-          await currentlyPlayingPromise //TODO: Fix not re-making request after refresh
-      })
-      .catch(err => {
-          message.channel.send('Error connecting to Spotify, try running reco login again.');
-      })
+    const currentlyPlayingPromise = axios
+      .get(endpoints.currentlyPlaying, { headers: { Authorization: `Bearer ${tokens.access_token}` } })
+      .then((res) => res.data);
+
+    if (tokens.expires_at <= Date.now()) {
+      await axios.get(`${endpoints.refresh}?${queryString.stringify({ id: message.author.id.toString() })}`);
+    }
+
+    const current = await currentlyPlayingPromise
+      .catch((err) => {
+        console.log(err);
+      });
 
     const track = current.item;
 
